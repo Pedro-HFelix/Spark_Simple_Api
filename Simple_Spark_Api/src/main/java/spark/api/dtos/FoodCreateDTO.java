@@ -15,7 +15,7 @@ public class FoodCreateDTO {
     private float rating;
 
     public FoodCreateDTO(String name, String description, float price, String category, boolean isAvailable,
-                         int calories, String ingredients, int preparationTime, float rating) {
+            int calories, String ingredients, int preparationTime, float rating) {
         this.name = name;
         this.description = description;
         this.price = price;
@@ -27,8 +27,9 @@ public class FoodCreateDTO {
         this.rating = rating;
     }
 
-    public FoodCreateDTO(UUID foodId, String name, String description, float price, String category, boolean isAvailable,
-                         int calories, String ingredients, int preparationTime, float rating) {
+    public FoodCreateDTO(UUID foodId, String name, String description, float price, String category,
+            boolean isAvailable,
+            int calories, String ingredients, int preparationTime, float rating) {
         this.foodId = foodId;
         this.name = name;
         this.description = description;
