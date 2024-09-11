@@ -1,0 +1,47 @@
+### Health Check
+GET http://localhost:4567/health
+Accept: application/json
+
+### Create Food
+POST http://localhost:4567/foods
+Content-Type: application/json
+
+{
+  "name": "Pizza Margherita",
+  "description": "Classic cheese pizza with tomato sauce",
+  "price": 12.99,
+  "category": "Italian",
+  "is_available": true,
+  "calories": 800,
+  "ingredients": "Tomato sauce, mozzarella, basil",
+  "preparation_time": 15,
+  "rating": 4.5
+}
+
+### Get All Foods
+GET http://localhost:4567/foods
+Accept: application/json
+
+### Get Food by ID
+GET http://localhost:4567/foods/{id}
+Accept: application/json
+
+### Update Food
+PUT http://localhost:4567/foods/{id}
+Content-Type: application/json
+
+{
+  "name": "Updated Pizza Margherita",
+  "description": "Updated description",
+  "price": 14.99,
+  "category": "Italian",
+  "is_available": true,
+  "calories": 850,
+  "ingredients": "Updated ingredients",
+  "preparation_time": 20,
+  "rating": 4.7
+}
+
+### Delete Food
+DELETE http://localhost:4567/foods/{id}
+Accept: application/json
