@@ -24,7 +24,34 @@ O projeto é construído usando Maven e as seguintes bibliotecas:
 
 - **[Dotenv Java](https://github.com/cdimascio/dotenv-java)**: `2.2.0`  
   Biblioteca para carregar variáveis de ambiente a partir de um arquivo `.env`.
+  
+## Configuração do Banco de Dados
 
+Para configurar o banco de dados PostgreSQL para este projeto, execute os seguintes comandos SQL:
+
+1. **Crie a extensão para UUID (caso ainda não exista)**:
+    ```sql
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    ```
+
+2. **Crie a tabela `foods`**:
+    ```sql
+    CREATE TABLE IF NOT EXISTS foods (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        price FLOAT NOT NULL,
+        category VARCHAR(255),
+        is_available BOOLEAN NOT NULL,
+        calories INT,
+        ingredients TEXT,
+        preparation_time INT,
+        rating FLOAT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    ```
+    
 ## Estrutura do Projeto
 
 - **`src/main/java`**: Código-fonte da aplicação.
