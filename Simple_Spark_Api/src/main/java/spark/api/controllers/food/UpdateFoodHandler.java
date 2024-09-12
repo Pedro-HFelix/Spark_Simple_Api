@@ -8,6 +8,7 @@ import spark.Response;
 import spark.api.controllers.ApiResponse;
 import spark.api.dtos.FoodUpdateDTO;
 import spark.api.dtos.FoodResponseDTO;
+import spark.api.exceptions.ResourceNotFoundException;
 import spark.api.exceptions.UpdateException;
 import spark.api.repository.IFoodRepository;
 import spark.api.useCases.foods.UpdateFoodUseCase;
@@ -45,6 +46,9 @@ public class UpdateFoodHandler extends FoodBaseHandler {
 			logger.error(e.getMessage());
 			response.status(500);
 			return gson.toJson(new ApiResponse(false, "Error updating food "));
+		} catch (ResourceNotFoundException e) {
+			response.status(404);
+			return gson.toJson(new ApiResponse(false, e.getMessage()));
 		}
 	}
 }

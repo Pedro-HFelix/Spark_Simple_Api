@@ -9,9 +9,9 @@ import spark.api.exceptions.ResourceNotFoundException;
 import spark.api.repository.IFoodRepository;
 import spark.api.useCases.foods.FindFoodByIdUseCase;
 
-public class GetFoodByIdHandler extends FoodBaseHandler {
+public class FindFoodByIdHandler extends FoodBaseHandler {
 
-	public GetFoodByIdHandler(IFoodRepository foodRepository, Gson gson) {
+	public FindFoodByIdHandler(IFoodRepository foodRepository, Gson gson) {
 		super(foodRepository, gson);
 	}
 

@@ -27,7 +27,7 @@ public class FoodRoutes {
 	private void configureRoutes() {
 		post("/foods", new CreateFoodHandler(foodRepository, gson));
 		get("/foods", new GetAllFoodsHandler(foodRepository, gson));
-		get("/foods/:id", new GetFoodByIdHandler(foodRepository, gson));
+		get("/foods/:id", new FindFoodByIdHandler(foodRepository, gson));
 		put("/foods/:id", new UpdateFoodHandler(foodRepository, gson));
 		delete("/foods/:id", new DeleteFoodHandler(foodRepository, gson));
 	}
