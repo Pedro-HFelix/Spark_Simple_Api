@@ -2,21 +2,25 @@ package spark.api.repository.postgres;
 
 import spark.api.dtos.FoodCreateDTO;
 import spark.api.dtos.FoodResponseDTO;
+import spark.api.dtos.FoodUpdateDTO;
+import spark.api.exceptions.CreationException;
+import spark.api.exceptions.DeleteException;
+import spark.api.exceptions.ResourceNotFoundException;
+import spark.api.exceptions.UpdateException;
 import spark.api.infra.database.DatabaseConfig;
 import spark.api.repository.IFoodRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public class FoodRepository implements IFoodRepository {
 
     @Override
-    public boolean createFood(FoodCreateDTO food) {
+    public FoodResponseDTO createFood(FoodCreateDTO food) {
         String sql = "INSERT INTO foods (name, description, price, category, is_available, calories, ingredients, preparation_time, rating) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, name, description, price, category, is_available, calories, ingredients, preparation_time, rating, created_at, updated_at";
 
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -31,21 +35,26 @@ public class FoodRepository implements IFoodRepository {
             statement.setInt(8, food.getPreparationTime());
             statement.setFloat(9, food.getRating());
 
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                return true;
+            try (ResultSet rs = statement.executeQuery()) {
+                if (!rs.next()) {
+                    throw new CreationException("Failed to retrieve the created food.");
+                }
+
+                return builderFoodResponseDTO(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            throw new CreationException("An error occurred while creating the food.");
         }
-        return false;
     }
 
     @Override
-    public boolean updateFood(FoodCreateDTO food) {
-        String sql = "UPDATE foods SET name = ?, description = ?, price = ?, category = ?, is_available = ?, calories = ?, ingredients = ?, preparation_time = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?";
+    public FoodResponseDTO updateFood(FoodUpdateDTO food) {
+        String updateSql = "UPDATE foods SET name = ?, description = ?, price = ?, category = ?, is_available = ?, calories = ?, ingredients = ?, preparation_time = ?, rating = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? RETURNING *";
+
         try (Connection connection = DatabaseConfig.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+             PreparedStatement statement = connection.prepareStatement(updateSql)) {
+
             statement.setString(1, food.getName());
             statement.setString(2, food.getDescription());
             statement.setFloat(3, food.getPrice());
@@ -57,26 +66,37 @@ public class FoodRepository implements IFoodRepository {
             statement.setFloat(9, food.getRating());
             statement.setObject(10, food.getFoodId(), Types.OTHER);
 
-            return statement.executeUpdate() > 0;
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return builderFoodResponseDTO(rs);
+                } else {
+                    throw new UpdateException("Failed to update food.");
+                }
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new UpdateException("Error updating food", e);
         }
-        return false;
     }
+
 
     @Override
-    public boolean deleteFood(UUID id) {
+    public void deleteFood(UUID id) {
         String sql = "DELETE FROM foods WHERE id = ?";
-        try (Connection connection = DatabaseConfig.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            statement.setObject(1, id, Types.OTHER);
-            return statement.executeUpdate() > 0;
+        try (Connection connection = DatabaseConfig.getConnection();
+             PreparedStatement deleteStatement = connection.prepareStatement(sql)) {
+
+            deleteStatement.setObject(1, id, Types.OTHER);
+            int affectedRows = deleteStatement.executeUpdate();
+            if (affectedRows == 0) {
+                throw new DeleteException("Failed to delete food item with ID: " + id);
+            }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new DeleteException("Error deleting food item", e);
         }
-        return false;
     }
+
 
     @Override
     public List<FoodResponseDTO> getAllFoods() {
@@ -99,21 +119,23 @@ public class FoodRepository implements IFoodRepository {
     }
 
     @Override
-    public Optional<FoodResponseDTO> getFoodById(UUID id) {
+    public FoodResponseDTO findById(UUID id) {
         String sql = "SELECT * FROM foods WHERE id = ?";
         try (Connection connection = DatabaseConfig.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
             statement.setObject(1, id, Types.OTHER);
-            ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
-                FoodResponseDTO food = builderFoodResponseDTO(rs);
-                return Optional.of(food);
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    return builderFoodResponseDTO(rs);
+                } else {
+                    throw new ResourceNotFoundException("Food item not found for ID: " + id);
+                }
             }
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error while retrieving food by ID", e);
         }
-        return Optional.empty();
     }
 
     private FoodResponseDTO builderFoodResponseDTO(ResultSet rs) throws SQLException {

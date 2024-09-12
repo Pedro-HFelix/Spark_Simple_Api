@@ -6,6 +6,7 @@ import spark.Response;
 import spark.api.controllers.ApiResponse;
 import spark.api.dtos.FoodResponseDTO;
 import spark.api.repository.IFoodRepository;
+import spark.api.useCases.foods.GetAllFoodsUseCase;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class GetAllFoodsHandler extends FoodBaseHandler {
 
 	@Override
 	public Object handle(Request request, Response response) {
-		List<FoodResponseDTO> foods = foodRepository.getAllFoods();
+		List<FoodResponseDTO> foods = new GetAllFoodsUseCase(foodRepository).execute();
 		return gson.toJson(new ApiResponse(true, "Foods retrieved successfully", foods));
 	}
 }

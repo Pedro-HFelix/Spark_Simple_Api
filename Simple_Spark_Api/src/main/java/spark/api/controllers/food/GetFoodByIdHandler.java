@@ -5,12 +5,12 @@ import spark.Request;
 import spark.Response;
 import spark.api.controllers.ApiResponse;
 import spark.api.dtos.FoodResponseDTO;
+import spark.api.exceptions.ResourceNotFoundException;
 import spark.api.repository.IFoodRepository;
+import spark.api.useCases.foods.FindFoodByIdUseCase;
 
-import java.util.Optional;
-import java.util.UUID;
+public class GetFoodByIdHandler extends FoodBaseHandler {
 
-public class GetFoodByIdHandler extends FoodBaseHandler{
 	public GetFoodByIdHandler(IFoodRepository foodRepository, Gson gson) {
 		super(foodRepository, gson);
 	}
@@ -18,13 +18,17 @@ public class GetFoodByIdHandler extends FoodBaseHandler{
 	@Override
 	public Object handle(Request request, Response response) {
 		String id = request.params(":id");
-		Optional<FoodResponseDTO> food = foodRepository.getFoodById(UUID.fromString(id));
-		if (food.isPresent()) {
-			return gson.toJson(new ApiResponse(true, "Food retrieved successfully", food.get()));
-		} else {
+
+		try {
+			FoodResponseDTO food = new FindFoodByIdUseCase(foodRepository).execute(id);
+			return gson.toJson(new ApiResponse(true, "Food retrieved successfully", food));
+		}catch (IllegalArgumentException e) {
+			response.status(400);
+			return gson.toJson(new ApiResponse(false, "Invalid UUID format: " + id));
+		}
+		catch (ResourceNotFoundException e) {
 			response.status(404);
-			return gson.toJson(new ApiResponse(false, "Food not found"));
+			return gson.toJson(new ApiResponse(false, e.getMessage()));
 		}
 	}
-
 }

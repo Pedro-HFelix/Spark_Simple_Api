@@ -1,9 +1,6 @@
 package spark.api.dtos;
 
-import java.util.UUID;
-
 public class FoodCreateDTO {
-    private UUID foodId;
     private String name;
     private String description;
     private float price;
@@ -25,29 +22,6 @@ public class FoodCreateDTO {
         this.ingredients = ingredients;
         this.preparationTime = preparationTime;
         this.rating = rating;
-    }
-
-    public FoodCreateDTO(UUID foodId, String name, String description, float price, String category,
-            boolean isAvailable,
-            int calories, String ingredients, int preparationTime, float rating) {
-        this.foodId = foodId;
-        this.name = name;
-        this.description = description;
-        this.price = price;
-        this.category = category;
-        this.isAvailable = isAvailable;
-        this.calories = calories;
-        this.ingredients = ingredients;
-        this.preparationTime = preparationTime;
-        this.rating = rating;
-    }
-
-    public UUID getFoodId() {
-        return foodId;
-    }
-
-    public void setFoodId(UUID foodId) {
-        this.foodId = foodId;
     }
 
     public String getName() {
@@ -120,5 +94,32 @@ public class FoodCreateDTO {
 
     public void setRating(float rating) {
         this.rating = rating;
+    }
+
+    public void validate() {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name is required.");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Description is required.");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("Price must be greater than zero.");
+        }
+        if (category == null || category.trim().isEmpty()) {
+            throw new IllegalArgumentException("Category is required.");
+        }
+        if (calories < 0) {
+            throw new IllegalArgumentException("Calories cannot be negative.");
+        }
+        if (ingredients == null || ingredients.trim().isEmpty()) {
+            throw new IllegalArgumentException("Ingredients are required.");
+        }
+        if (preparationTime < 0) {
+            throw new IllegalArgumentException("Preparation time cannot be negative.");
+        }
+        if (rating < 0 || rating > 5) {
+            throw new IllegalArgumentException("Rating must be between 0 and 5.");
+        }
     }
 }
